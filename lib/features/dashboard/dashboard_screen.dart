@@ -474,7 +474,12 @@ class _AccountChip extends StatelessWidget {
                     ],
                   ],
                 ),
-                  Text(_accountTypeLabel(type), style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.9))),
+                Text(
+                  _accountTypeLabel(type),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10, color: color.withValues(alpha: 0.9)),
+                ),
               ],
             ),
           ),
