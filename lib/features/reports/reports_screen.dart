@@ -24,13 +24,23 @@ class ReportsScreen extends ConsumerStatefulWidget {
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   ReportPeriod _period = ReportPeriod.month;
   bool _generating = false;
+  late Future<ReportData> _report;
   final _pieKey = GlobalKey();
   final _trendKey = GlobalKey();
 
   @override
-  Widget build(BuildContext context) {
-    final db = ref.watch(databaseProvider);
+  void initState() {
+    super.initState();
+    _report = _buildReport();
+  }
 
+  void _selectPeriod(ReportPeriod period) => setState(() {
+    _period = period;
+    _report = _buildReport();
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Relatórios'),
@@ -38,7 +48,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: FilledButton.icon(
-              onPressed: _generating ? null : () => _generatePdf(db),
+              onPressed: _generating ? null : _generatePdf,
               style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
               icon: _generating
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
@@ -49,14 +59,14 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         ],
       ),
       body: FutureBuilder<ReportData>(
-        future: _buildReport(db),
+        future: _report,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
           return _ReportPreview(
             report: snapshot.data!,
-            onPeriodChanged: (p) => setState(() => _period = p),
+            onPeriodChanged: _selectPeriod,
             pieKey: _pieKey,
             trendKey: _trendKey,
           );
@@ -65,10 +75,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
   }
 
-  Future<ReportData> _buildReport(AppDatabase db) async {
+  Future<ReportData> _buildReport() async {
+    final db = ref.read(databaseProvider);
     final now = DateTime.now();
     final start = _period.start(now);
-    final end = DateTime(now.year, now.month + 1, 0);
+    final end = _period.end(now);
 
     final categories = await db.getCategories();
     final categoriesMap = {for (final c in categories) c.id: c};
@@ -81,11 +92,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final accounts = await db.getAccounts();
     final transactions = await db.watchTransactions(from: start, to: end, limit: 15).first;
 
-    var largest = 0;
-    final allTx = await db.watchTransactions(from: start, to: end, limit: 5000).first;
-    for (final t in allTx) {
-      if (t.type == kExpense && t.amount > largest) largest = t.amount;
-    }
+    final largest = await db.maxAmountByType(kExpense, from: start, to: end);
     final days = end.difference(start).inDays + 1;
     final dailyAvg = days == 0 ? 0.0 : expense / days;
 
@@ -117,10 +124,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     );
   }
 
-  Future<void> _generatePdf(AppDatabase db) async {
+  Future<void> _generatePdf() async {
     setState(() => _generating = true);
     try {
-      final report = await _buildReport(db);
+      final report = await _report;
       await Future<void>.delayed(const Duration(milliseconds: 300));
 
       final piePng = await _capture(_pieKey);

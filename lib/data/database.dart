@@ -493,6 +493,11 @@ class AppDatabase extends _$AppDatabase {
     if (type != null) query.where((t) => t.type.equals(type));
     if (accountId != null) query.where((t) => t.accountId.equals(accountId));
     if (categoryId != null) query.where((t) => t.categoryId.equals(categoryId));
+    final term = search?.trim();
+    if (term != null && term.isNotEmpty) {
+      final like = '%$term%';
+      query.where((t) => t.description.like(like) | t.notes.like(like));
+    }
     query.orderBy([
       (t) => OrderingTerm.desc(t.date),
       (t) => OrderingTerm.desc(t.createdAt),
@@ -566,6 +571,26 @@ class AppDatabase extends _$AppDatabase {
       readsFrom: {transactions},
     ).get();
     return {for (final row in result) row.read<String>('cid'): row.read<int>('total')};
+  }
+
+  /// Maior lançamento do tipo no período (0 quando não há).
+  Future<int> maxAmountByType(String type, {DateTime? from, DateTime? to}) async {
+    final clauses = <String>['deleted_at IS NULL', 'type = ?'];
+    final vars = <Variable<Object>>[Variable.withString(type)];
+    if (from != null) {
+      clauses.add('date >= ?');
+      vars.add(Variable.withDateTime(from));
+    }
+    if (to != null) {
+      clauses.add('date <= ?');
+      vars.add(Variable.withDateTime(to));
+    }
+    final row = await customSelect(
+      'SELECT COALESCE(MAX(amount), 0) AS biggest FROM transactions WHERE ${clauses.join(' AND ')}',
+      variables: vars,
+      readsFrom: {transactions},
+    ).getSingle();
+    return row.read<int>('biggest');
   }
 
   Future<List<({String month, int income, int expense})>> monthlySummary(int months) async {

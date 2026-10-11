@@ -305,7 +305,7 @@ class _AmountSummary extends StatelessWidget {
             : 'Registrando despesa';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(color: color.withOpacity(.08), borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(color: color.withValues(alpha: .08), borderRadius: BorderRadius.circular(14)),
       child: Row(
         children: [
           Icon(

@@ -97,7 +97,7 @@ abstract final class AppTheme {
 
     final surface = isDark ? AppColors.darkSurface : AppColors.lightSurface;
     final surfaceHigh = isDark ? AppColors.darkSurfaceHigh : Colors.white;
-    final border = isDark ? Colors.white.withOpacity(.07) : Colors.black.withOpacity(.06);
+    final border = isDark ? Colors.white.withValues(alpha: .07) : Colors.black.withValues(alpha: .06);
 
     return ThemeData(
       useMaterial3: true,
@@ -135,7 +135,7 @@ abstract final class AppTheme {
         fillColor: surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         labelStyle: TextStyle(color: scheme.onSurfaceVariant, fontWeight: FontWeight.w500),
-        hintStyle: TextStyle(color: scheme.onSurfaceVariant.withOpacity(.6)),
+        hintStyle: TextStyle(color: scheme.onSurfaceVariant.withValues(alpha: .6)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: border),

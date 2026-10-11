@@ -49,7 +49,7 @@ class SectionHeader extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -76,7 +76,7 @@ class EmptyState extends StatelessWidget {
               width: 84,
               height: 84,
               decoration: BoxDecoration(
-                color: scheme.primaryContainer.withOpacity(.6),
+                color: scheme.primaryContainer.withValues(alpha: .6),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 40, color: scheme.onPrimaryContainer),
@@ -112,7 +112,7 @@ class CategoryAvatar extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: base.withOpacity(.14),
+        color: base.withValues(alpha: .14),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -260,8 +260,8 @@ class MoneyField extends StatelessWidget {
     final buffer = StringBuffer();
     final reaisStr = reais.toString();
     for (var i = 0; i < reaisStr.length; i++) {
-      final fromEnd = reaisStr.length - 1 - i;
-      if (i > 0 && fromEnd % 3 == 0) buffer.write('.');
+      final digitsRight = reaisStr.length - i;
+      if (i > 0 && digitsRight % 3 == 0) buffer.write('.');
       buffer.write(reaisStr[i]);
     }
     buffer.write(',$centavos');

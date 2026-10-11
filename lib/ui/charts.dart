@@ -200,7 +200,7 @@ class CashFlowBars extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: scheme.outlineVariant.withOpacity(.25),
+              color: scheme.outlineVariant.withValues(alpha: .25),
               strokeWidth: 1,
             ),
           ),
@@ -314,7 +314,7 @@ class TrendChart extends StatelessWidget {
             show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: scheme.outlineVariant.withOpacity(.25),
+              color: scheme.outlineVariant.withValues(alpha: .25),
               strokeWidth: 1,
             ),
           ),
@@ -360,7 +360,7 @@ class TrendChart extends StatelessWidget {
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: AppColors.expense.withOpacity(.10),
+                  color: AppColors.expense.withValues(alpha: .10),
                 ),
               ),
             if (showIncome)
@@ -375,7 +375,7 @@ class TrendChart extends StatelessWidget {
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: AppColors.income.withOpacity(.08),
+                  color: AppColors.income.withValues(alpha: .08),
                 ),
               ),
           ],
@@ -424,7 +424,7 @@ class FilterSegmented<T> extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withOpacity(.7),
+        color: scheme.surfaceContainerHighest.withValues(alpha: .7),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

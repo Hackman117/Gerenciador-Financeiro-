@@ -32,24 +32,31 @@ enum ReportPeriod {
     };
   }
 
+  /// Limite superior inclusivo do período (os filtros usam `date <= fim`).
+  DateTime end(DateTime now) => switch (this) {
+        ReportPeriod.week => endOfDay(now),
+        ReportPeriod.month || ReportPeriod.sixMonths || ReportPeriod.year || ReportPeriod.all =>
+          endOfDay(DateTime(now.year, now.month + 1, 0)),
+      };
+
   String subtitle(DateTime now, DateTime start) => switch (this) {
         ReportPeriod.week => FormatNow.dayRange(now, start),
         ReportPeriod.month => Formats.monthYear(now),
         ReportPeriod.sixMonths => FormatNow.monthRange(now, start),
         ReportPeriod.year => Formats.monthYear(start),
-        ReportPeriod.all => 'Desde ' + DateTime(start.year, start.month, 1).year.toString(),
+        ReportPeriod.all => 'Desde ${DateTime(start.year, start.month, 1).year}',
       };
 }
 
 /// Extrai atalhos de data usados no relatório.
 abstract final class FormatNow {
   static String dayRange(DateTime now, DateTime start) =>
-      '${Formats.date(start)} – ${Formats.date(now)}';
+      '${Formats.date(start)} - ${Formats.date(now)}';
 
   static String monthRange(DateTime now, DateTime start) {
     final end = DateTime(now.year, now.month, 1);
     final begin = DateTime(start.year, start.month, 1);
-    return '${Formats.monthYear(begin)} – ${Formats.monthYear(end)}';
+    return '${Formats.monthYear(begin)} - ${Formats.monthYear(end)}';
   }
 }
 
@@ -120,7 +127,7 @@ class ReportService {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text('Relatório Financeiro', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: _primary)),
-                    pw.Text('FinaMind • ${report.period.label}', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
+                    pw.Text('FinaMind - ${report.period.label}', style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700)),
                   ],
                 ),
                 pw.Column(
@@ -225,7 +232,7 @@ class ReportService {
       final pct = r.expense == 0 ? 0.0 : d.amount / r.expense;
       return [
         name,
-        '$pct',
+        Formats.percent(pct),
         Formats.money(d.amount),
       ];
     }).toList();
@@ -247,13 +254,13 @@ class ReportService {
   }
 
   static pw.Widget _accountsTable(ReportData r) {
-    // Tabela de contas com saldo — os saldos foram calculados no app.
+    // Tabela de contas com saldo - os saldos foram calculados no app.
     final rows = r.accounts
         .where((a) => !a.archived)
         .map((a) => [
               a.name,
               _accountTypeName(a.type),
-              '—',
+              '-',
             ])
         .toList();
 
@@ -279,7 +286,7 @@ class ReportService {
       final color = t.type == 'income' ? _income : _expense;
       return [
         Formats.date(t.date),
-        '${t.description.isNotEmpty ? t.description : name}',
+        t.description.isNotEmpty ? t.description : name,
         type,
         pw.Text(Formats.money(t.amount), style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: color)),
       ];

@@ -35,12 +35,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final range = _range;
     final transactions = ref.watch(
       transactionsForFiltersProvider((
         type: _type,
         search: _search,
-        from: _range?.start,
-        to: _range?.end,
+        from: range?.start,
+        to: range == null ? null : endOfDay(range.end),
       )),
     );
     final categories = ref.watch(categoriesProvider).asData?.value ?? const [];
@@ -86,7 +87,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
                   itemCount: list.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (context, i) {
                     final tx = list[i];
                     final category = categories.where((c) => c.id == tx.categoryId).firstOrNull;

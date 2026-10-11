@@ -3,6 +3,10 @@ import 'package:intl/intl.dart';
 
 import 'theme/app_theme.dart';
 
+/// Último instante do dia: os filtros de período com `date <= to` são inclusivos,
+/// então o fim de um mês/intervalo precisa chegar às 23:59, senão o último dia some.
+DateTime endOfDay(DateTime date) => DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+
 final NumberFormat _currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 final NumberFormat _percent = NumberFormat.percentPattern('pt_BR');
 final DateFormat _dayMonth = DateFormat('dd/MM/yyyy');

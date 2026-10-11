@@ -22,13 +22,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: rootNavigatorKey,
     redirect: (context, state) => authRedirect(auth: auth, location: state.matchedLocation),
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const AppShell()),
-      GoRoute(path: '/entrar', builder: (_, __) => const AuthScreen()),
-      GoRoute(path: '/conta', builder: (_, __) => const AccountScreen()),
+      GoRoute(path: '/', builder: (_, _) => const AppShell()),
+      GoRoute(path: '/entrar', builder: (_, _) => const AuthScreen()),
+      GoRoute(path: '/conta', builder: (_, _) => const AccountScreen()),
       GoRoute(
         path: '/nova-transacao',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (_, __) => const TransactionEditorScreen(),
+        builder: (_, _) => const TransactionEditorScreen(),
       ),
       GoRoute(
         path: '/nova-transacao/:id',

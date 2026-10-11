@@ -28,7 +28,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
   Widget build(BuildContext context) {
     final budgets = ref.watch(budgetsForMonthProvider(_monthKey));
     final categories = ref.watch(categoriesProvider).asData?.value ?? const <Category>[];
-    final monthEnd = DateTime(_month.year, _month.month + 1, 0);
+    final monthEnd = endOfDay(DateTime(_month.year, _month.month + 1, 0));
     final spentByCategory = ref.watch(spentByCategoryProvider((
       _month,
       monthEnd,

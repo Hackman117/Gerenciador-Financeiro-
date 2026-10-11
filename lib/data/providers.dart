@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/utils.dart';
 import 'credit_models.dart';
 import 'database.dart';
 
@@ -143,7 +144,7 @@ final dashboardProvider = FutureProvider<DashboardData>((ref) async {
 
   final now = DateTime.now();
   final monthStart = DateTime(now.year, now.month, 1);
-  final monthEnd = DateTime(now.year, now.month + 1, 0);
+  final monthEnd = endOfDay(DateTime(now.year, now.month + 1, 0));
 
   final balance = await db.totalBalance();
   final income = await db.sumByType(kIncome, from: monthStart, to: monthEnd);
@@ -159,11 +160,7 @@ final dashboardProvider = FutureProvider<DashboardData>((ref) async {
   final recent = await db.watchTransactions(from: monthStart, limit: 5).first;
   final accounts = await db.getAccounts();
 
-  var largest = 0;
-  final txThisMonth = await db.watchTransactions(from: monthStart, limit: 100000).first;
-  for (final t in txThisMonth) {
-    if (t.type == kExpense && t.amount > largest) largest = t.amount;
-  }
+  final largest = await db.maxAmountByType(kExpense, from: monthStart, to: monthEnd);
   final daysElapsed = now.day;
   final dailyAvg = daysElapsed == 0 ? 0.0 : expense / daysElapsed;
   final savingsRate = income == 0 ? 0.0 : ((income - expense) / income).clamp(0.0, 1.0);
@@ -192,9 +189,9 @@ final monthCompareProvider = FutureProvider<({int income, int expense, int prevI
     final db = ref.watch(databaseProvider);
     final now = DateTime.now();
     final thisStart = DateTime(now.year, now.month, 1);
-    final thisEnd = DateTime(now.year, now.month + 1, 0);
+    final thisEnd = endOfDay(DateTime(now.year, now.month + 1, 0));
     final prevStart = DateTime(now.year, now.month - 1, 1);
-    final prevEnd = DateTime(now.year, now.month, 0);
+    final prevEnd = endOfDay(DateTime(now.year, now.month, 0));
 
     final income = await db.sumByType(kIncome, from: thisStart, to: thisEnd);
     final expense = await db.sumByType(kExpense, from: thisStart, to: thisEnd);
@@ -249,7 +246,7 @@ final projectionProvider = FutureProvider<({int balance, int delta})>((ref) asyn
   final db = ref.watch(databaseProvider);
   final now = DateTime.now();
   final balance = await db.totalBalance();
-  final delta = await db.projectedDeltaUntil(until: DateTime(now.year, now.month + 1, 0));
+  final delta = await db.projectedDeltaUntil(until: endOfDay(DateTime(now.year, now.month + 1, 0)));
   return (balance: balance, delta: delta);
 });
 

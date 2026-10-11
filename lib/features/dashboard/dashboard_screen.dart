@@ -417,7 +417,7 @@ class _AccountsStrip extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: accounts.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
           final account = accounts[i];
             final isDefaultColor = AppColors.accountColors[i % AppColors.accountColors.length];

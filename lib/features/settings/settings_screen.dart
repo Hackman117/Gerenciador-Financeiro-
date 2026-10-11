@@ -284,7 +284,7 @@ class _SyncSectionState extends ConsumerState<_SyncSection> {
       children: [
         const SectionHeader(title: 'Sincronização'),
         AppCard(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(.6),
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: .6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -294,7 +294,7 @@ class _SyncSectionState extends ConsumerState<_SyncSection> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(.12),
+                    color: AppColors.primary.withValues(alpha: .12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(Icons.cloud_sync_outlined, color: AppColors.primary),

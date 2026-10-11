@@ -19,9 +19,9 @@ final testRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/conta',
     redirect: (context, state) => authRedirect(auth: auth, location: state.matchedLocation),
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const Scaffold(body: Center(child: Text('Início')))),
-      GoRoute(path: '/entrar', builder: (_, __) => const AuthScreen()),
-      GoRoute(path: '/conta', builder: (_, __) => const AccountScreen()),
+      GoRoute(path: '/', builder: (_, _) => const Scaffold(body: Center(child: Text('Início')))),
+      GoRoute(path: '/entrar', builder: (_, _) => const AuthScreen()),
+      GoRoute(path: '/conta', builder: (_, _) => const AccountScreen()),
     ],
   );
 });

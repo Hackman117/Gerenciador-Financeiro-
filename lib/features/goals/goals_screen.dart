@@ -143,7 +143,7 @@ class _GoalCard extends ConsumerWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: color.withOpacity(.12),
+                color: color.withValues(alpha: .12),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(goal.completed ? Icons.emoji_events_rounded : Icons.flag_rounded, color: color, size: 24),
@@ -179,7 +179,7 @@ class _GoalCard extends ConsumerWidget {
                         Text(
                           overdue
                               ? '${remainingDays.abs()}d em atraso'
-                              : '${remainingDays} dias restantes',
+                              : '$remainingDays dias restantes',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
