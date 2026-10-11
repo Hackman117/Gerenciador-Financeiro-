@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,11 +35,11 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen> {
           accountId: rule.accountId,
           toAccountId: const Value(null),
           categoryId: Value(categoryId),
-          type: Value(rule.type),
-          amount: Value(rule.amount),
+          type: rule.type,
+          amount: rule.amount,
           description: Value(rule.description),
           notes: const Value(''),
-          date: Value(DateTime.now()),
+          date: rule.nextDueDate,
           recurringId: Value(rule.id),
           createdAt: Value(DateTime.now()),
         ),
@@ -85,8 +86,8 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen> {
   @override
   Widget build(BuildContext context) {
     final recurring = ref.watch(recurringProvider);
-    final accounts = ref.watch(accountsProvider).valueOrNull ?? const <Account>[];
-    final categories = ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
+    final accounts = ref.watch(accountsProvider).value ?? const <Account>[];
+    final categories = ref.watch(categoriesProvider).value ?? const <Category>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -269,7 +270,7 @@ class _RecurringEditorSheetState extends ConsumerState<_RecurringEditorSheet> {
 
   Future<void> _save() async {
     final db = ref.read(databaseProvider);
-    final amount = _amount.valueInCents ?? 0;
+    final amount = MoneyField.centsOf(_amount);
     final accountId = _accountId;
     if (accountId == null || accountId.isEmpty) {
       showAppSnack(context, 'Escolha a conta.', error: true);
@@ -291,14 +292,14 @@ class _RecurringEditorSheetState extends ConsumerState<_RecurringEditorSheet> {
         id: id,
         accountId: accountId,
         categoryId: Value(_type == kTransfer ? null : _categoryId),
-        type: Value(_type),
-        amount: Value(amount),
+        type: _type,
+        amount: amount,
         description: Value(_description.text.trim()),
         frequency: Value(_frequency),
         interval: const Value(1),
-        startDate: Value(_start),
+        startDate: _start,
         endDate: Value(widget.rule?.endDate),
-        nextDueDate: Value(nextDue),
+        nextDueDate: nextDue,
         autoCreate: const Value(true),
         paused: Value(widget.rule?.paused ?? false),
         createdAt: Value(DateTime.now()),
@@ -312,8 +313,8 @@ class _RecurringEditorSheetState extends ConsumerState<_RecurringEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final accounts = ref.watch(accountsProvider).valueOrNull ?? const <Account>[];
-    final categories = ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
+    final accounts = ref.watch(accountsProvider).value ?? const <Account>[];
+    final categories = ref.watch(categoriesProvider).value ?? const <Category>[];
     final isEdit = widget.rule != null;
 
     if (_accountId == null && accounts.isNotEmpty) {

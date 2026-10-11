@@ -19,8 +19,8 @@ void main() {
     return rows.map((r) => r.read<String>('name')).toSet();
   }
 
-  test('schemaVersion = 2 (migração definida)', () {
-    expect(db.schemaVersion, 2);
+  test('schemaVersion = 3 (migração definida)', () {
+    expect(db.schemaVersion, 3);
   });
 
   test('todas as tabelas base existem com as colunas corretas', () async {

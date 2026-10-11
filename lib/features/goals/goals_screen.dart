@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,7 +18,7 @@ class GoalsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Metas')),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showEditor(ref, goal: null),
+        onPressed: () => showAppSheet(context, _GoalEditorSheet(goal: null)),
         child: const Icon(Icons.add_rounded),
       ),
       body: goals.when(
@@ -49,14 +50,6 @@ class GoalsScreen extends ConsumerWidget {
       ),
     );
   }
-
-  Future<void> _showEditor(WidgetRef ref, {Goal? goal}) async {
-    await showAppSheet(context, _GoalEditorSheet(goal: goal));
-  }
-
-  Future<void> _showContribution(WidgetRef ref, Goal goal) async {
-    await showAppSheet(context, _ContributionSheet(goal: goal));
-  }
 }
 
 class _GoalsSummary extends StatelessWidget {
@@ -68,8 +61,7 @@ class _GoalsSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final saved = goals.fold<int>(0, (s, g) => s + (g.completed ? 0 : g.savedAmount));
     final target = goals.fold<int>(0, (s, g) => s + (g.completed ? 0 : g.targetAmount));
-    final totalSaved = goals.fold<int>(0, (s, g) => s + g.savedAmount);
-    final percent = totalSaved == 0 ? 0.0 : (totalSaved / goals.fold<int>(0, (s, g) => s + g.targetAmount)).clamp(0.0, 1.0);
+    final percent = target == 0 ? 0.0 : (saved / target).clamp(0.0, 1.0);
 
     return AppCard(
       child: Column(
@@ -186,7 +178,7 @@ class _GoalCard extends ConsumerWidget {
                       if (goal.deadline != null && !goal.completed)
                         Text(
                           overdue
-                              ? '${remainingDays!.abs()}d em atraso'
+                              ? '${remainingDays.abs()}d em atraso'
                               : '${remainingDays} dias restantes',
                           style: TextStyle(
                             fontSize: 11,
@@ -289,7 +281,7 @@ class _ContributionSheetState extends ConsumerState<_ContributionSheet> {
           const SizedBox(height: 20),
           FilledButton(
             onPressed: () async {
-              final amount = _amount.valueInCents ?? 0;
+              final amount = MoneyField.centsOf(_amount);
               if (amount <= 0) {
                 showAppSnack(context, 'Informe um valor maior que zero.', error: true);
                 return;
@@ -331,7 +323,6 @@ class _GoalEditorSheetState extends ConsumerState<_GoalEditorSheet> {
   final _target = TextEditingController();
   late int _color;
   late DateTime? _deadline;
-  DateTime? _picked;
 
   @override
   void initState() {
@@ -369,13 +360,15 @@ class _GoalEditorSheetState extends ConsumerState<_GoalEditorSheet> {
             InkWell(
               onTap: () async {
                 final now = DateTime.now();
+                final existing = _deadline;
+                final initial = existing == null || existing.isBefore(now) ? now : existing;
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: _deadline ?? DateTime(now.year + 1),
+                  initialDate: initial,
                   firstDate: now,
                   lastDate: DateTime(2100),
                 );
-                if (picked != null) setState(() => _deadline = _picked = picked);
+                if (picked != null) setState(() => _deadline = picked);
               },
               child: InputDecorator(
                 decoration: const InputDecoration(labelText: 'Prazo (opcional)', prefixIcon: Icon(Icons.event_rounded)),
@@ -412,7 +405,7 @@ class _GoalEditorSheetState extends ConsumerState<_GoalEditorSheet> {
             FilledButton(
               onPressed: () async {
                 final name = _name.text.trim();
-                final target = _target.valueInCents ?? 0;
+                final target = MoneyField.centsOf(_target);
                 if (name.isEmpty) {
                   showAppSnack(context, 'Dê um nome para a meta.', error: true);
                   return;

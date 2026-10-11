@@ -53,7 +53,7 @@ class SettingsScreen extends ConsumerWidget {
           const SectionHeader(title: 'Segurança'),
           _SectionCard(
             children: [
-              _PinTile(db: db),
+              const _PinTile(),
             ],
           ),
           const SectionHeader(title: 'Exportar dados'),
@@ -136,6 +136,19 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
+/// Agrupa os ListTile relacionados de uma seção dentro de um card.
+class _SectionCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const _SectionCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        child: Column(children: children),
+      );
+}
+
 class _PinTile extends ConsumerStatefulWidget {
   const _PinTile();
 
@@ -146,7 +159,7 @@ class _PinTile extends ConsumerStatefulWidget {
 class _PinTileState extends ConsumerState<_PinTile> {
   @override
   Widget build(BuildContext context) {
-    final pin = ref.watch(settingsProvider('app_pin')).valueOrNull;
+    final pin = ref.watch(settingsProvider('app_pin')).value;
     final enabled = pin != null && pin.isNotEmpty;
 
     return SwitchListTile(
@@ -264,7 +277,7 @@ class _SyncSectionState extends ConsumerState<_SyncSection> {
 
   @override
   Widget build(BuildContext context) {
-    final lastSync = ref.watch(settingsProvider('last_sync_at')).valueOrNull;
+    final lastSync = ref.watch(settingsProvider('last_sync_at')).value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

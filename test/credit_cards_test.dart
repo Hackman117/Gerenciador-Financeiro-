@@ -399,7 +399,9 @@ void main() {
       await tester.tap(find.byIcon(Icons.add_rounded).last);
       await settle(tester);
 
-      await tester.tap(find.byKey(const ValueKey('purchase_editor_save')));
+      final save = find.byKey(const ValueKey('purchase_editor_save'));
+      await tester.scrollUntilVisible(save, 120, scrollable: find.byType(Scrollable).first);
+      await tester.tap(save);
       await flushAsync(tester);
 
       final purchases = await db.getPurchases();

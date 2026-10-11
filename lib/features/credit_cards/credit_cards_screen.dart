@@ -382,7 +382,7 @@ class _CreditCardEditorSheetState extends ConsumerState<CreditCardEditorSheet> {
       showAppSnack(context, 'Dê um nome para o cartão.', error: true);
       return;
     }
-    final limit = MoneyField.centsOf(_limit) ?? 0;
+    final limit = MoneyField.centsOf(_limit);
     if (limit <= 0) {
       showAppSnack(context, 'Informe um limite válido.', error: true);
       return;

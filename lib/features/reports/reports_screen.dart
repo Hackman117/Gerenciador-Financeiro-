@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
 import '../../core/theme/app_theme.dart';
-import '../../core/utils.dart';
 import '../../data/database.dart';
 import '../../data/providers.dart';
 import '../../data/report_service.dart';
@@ -92,7 +91,10 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final trend = switch (_period) {
       ReportPeriod.week || ReportPeriod.month => await db.timeSeries(_period == ReportPeriod.week ? 'semana' : 'mes'),
-      ReportPeriod.sixMonths || ReportPeriod.year => await db.monthlySummary(_period == ReportPeriod.sixMonths ? 6 : 12),
+      ReportPeriod.sixMonths || ReportPeriod.year => [
+        for (final m in await db.monthlySummary(_period == ReportPeriod.sixMonths ? 6 : 12))
+          (label: m.month, income: m.income, expense: m.expense),
+      ],
       ReportPeriod.all => await db.timeSeries('anos'),
     };
 

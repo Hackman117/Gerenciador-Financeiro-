@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'data/database.dart';
 import 'data/providers.dart';
-import 'data/sync.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

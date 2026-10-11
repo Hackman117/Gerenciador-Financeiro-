@@ -88,67 +88,6 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
     );
   }
 
-  // --------------------------------------------------------- hero
-
-  Widget _heroBody() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: const Text(
-                'SALDO TOTAL',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1.2,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const Spacer(),
-            IconButton(
-              onPressed: () {},
-              style: IconButton.styleFrom(foregroundColor: Colors.white.withValues(alpha: 0.9)),
-              icon: const Icon(Icons.more_horiz),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          Formats.money(data.balance),
-          style: const TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            height: 1,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _HeroStat(label: 'Receitas', value: Formats.money(data.income), icon: Icons.arrow_upward_rounded),
-            const SizedBox(width: 20),
-            _HeroStat(label: 'Gastos', value: Formats.money(data.expense), icon: Icons.arrow_downward_rounded),
-            const SizedBox(width: 20),
-            _HeroStat(
-              label: 'Economia',
-              value: Formats.money(data.savings),
-              icon: Icons.savings_rounded,
-              valueColor: data.savings >= 0 ? const Color(0xFFB7F7D3) : const Color(0xFFFFC7CF),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _overviewCard() {
     final expenses = [
       for (final d in data.expenses)

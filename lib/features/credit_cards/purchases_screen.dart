@@ -286,7 +286,7 @@ class _PurchaseEditorScreenState extends ConsumerState<PurchaseEditorScreen> {
       showAppSnack(context, 'Informe o estabelecimento.', error: true);
       return;
     }
-    final total = MoneyField.centsOf(_total) ?? 0;
+    final total = MoneyField.centsOf(_total);
     if (total <= 0) {
       showAppSnack(context, 'Informe um valor maior que zero.', error: true);
       return;
@@ -312,7 +312,7 @@ class _PurchaseEditorScreenState extends ConsumerState<PurchaseEditorScreen> {
     final scheme = Theme.of(context).colorScheme;
     final categories = ref.watch(categoriesProvider).value ?? const <Category>[];
     final allowedCategories = categories.where((c) => c.type == kExpense).toList();
-    final total = MoneyField.centsOf(_total) ?? 0;
+    final total = MoneyField.centsOf(_total);
     final installments = _installmentMode ? _installments : 1;
     final values = total > 0 && installments > 0 ? AppDatabase.splitAmount(total, installments) : <int>[];
 
@@ -342,22 +342,21 @@ class _PurchaseEditorScreenState extends ConsumerState<PurchaseEditorScreen> {
             controller: _total,
           ),
           const SizedBox(height: 6),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainerHighest.withValues(alpha: .5),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: SwitchListTile(
-              key: const ValueKey('purchase_editor_installment_toggle'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Parcelado'),
-              subtitle: Text(values.isNotEmpty
-                  ? '${installments}x de ${Formats.money(values.first)}'
-                  : 'Informe o valor total'),
-              value: _installmentMode,
-              onChanged: (v) => setState(() => _installmentMode = v),
+          Material(
+            color: scheme.surfaceContainerHighest.withValues(alpha: .5),
+            borderRadius: BorderRadius.circular(14),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: SwitchListTile(
+                key: const ValueKey('purchase_editor_installment_toggle'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Parcelado'),
+                subtitle: Text(values.isNotEmpty
+                    ? '${installments}x de ${Formats.money(values.first)}'
+                    : 'Informe o valor total'),
+                value: _installmentMode,
+                onChanged: (v) => setState(() => _installmentMode = v),
+              ),
             ),
           ),
           if (_installmentMode) ...[

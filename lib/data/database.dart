@@ -1266,7 +1266,10 @@ class AppDatabase extends _$AppDatabase {
 
     await customInsert(
       'INSERT INTO purchases (id, credit_card_id, category_id, subcategory_id, establishment, total_amount, installment_count, installment_amount, purchase_date, description, paid, created_at, updated_at) '
-      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)',
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?) '
+      'ON CONFLICT(id) DO UPDATE SET credit_card_id = excluded.credit_card_id, category_id = excluded.category_id, subcategory_id = excluded.subcategory_id, establishment = excluded.establishment, '
+      'total_amount = excluded.total_amount, installment_count = excluded.installment_count, installment_amount = excluded.installment_amount, purchase_date = excluded.purchase_date, '
+      'description = excluded.description, paid = 0, updated_at = excluded.updated_at',
       variables: [
         Variable.withString(finalId),
         Variable.withString(creditCardId),

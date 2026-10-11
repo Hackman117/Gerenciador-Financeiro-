@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,7 +23,7 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
   final _descriptionController = TextEditingController();
   final _notesController = TextEditingController();
 
-  late final String _typeKey;
+  late String _typeKey;
   late String? _accountId;
   String? _toAccountId;
   String? _categoryId;
@@ -83,7 +84,7 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
     final db = ref.read(databaseProvider);
     if (!_formKey.currentState!.validate()) return;
 
-    final amount = _amountController.valueInCents ?? 0;
+    final amount = MoneyField.centsOf(_amountController);
     if (amount <= 0) {
       showAppSnack(context, 'Informe um valor maior que zero.', error: true);
       return;
@@ -109,11 +110,11 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
         accountId: accountId,
         toAccountId: Value(_toAccountId),
         categoryId: Value(_typeKey == kTransfer ? null : _categoryId),
-        type: Value(_typeKey),
-        amount: Value(amount),
+        type: _typeKey,
+        amount: amount,
         description: Value(_descriptionController.text.trim()),
         notes: Value(_notesController.text.trim()),
-        date: Value(_date),
+        date: _date,
         createdAt: Value(DateTime.now()),
       ),
       id: id,
@@ -140,8 +141,8 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
 
   @override
   Widget build(BuildContext context) {
-    final accounts = ref.watch(accountsProvider).valueOrNull ?? const <Account>[];
-    final categories = ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
+    final accounts = ref.watch(accountsProvider).value ?? const <Account>[];
+    final categories = ref.watch(categoriesProvider).value ?? const <Category>[];
 
     if (widget.txId != null && !_loadedFromDb) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -238,9 +239,9 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
                 initialValue: _categoryId,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: _typeKey == kIncome ? 'Categoria (receita)' : 'Categoria',
-                  prefixIcon: Icon(Icons.category_outlined),
+                  prefixIcon: const Icon(Icons.category_outlined),
                 ),
                 items: [
                   for (final c in allowedCategories)

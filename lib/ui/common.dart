@@ -274,13 +274,13 @@ class MoneyField extends StatelessWidget {
   }
 
   /// Converte o texto de um campo monetário (ex.: "1.234,56") em centavos.
-  static int? centsOf(TextEditingController controller) {
+  static int centsOf(TextEditingController controller) {
     final digits = controller.text.replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty || digits == '0') return 0;
     return int.parse(digits.padLeft(3, '0'));
   }
 
-  int? get valueInCents => centsOf(controller);
+  int get valueInCents => centsOf(controller);
 
   @override
   Widget build(BuildContext context) {

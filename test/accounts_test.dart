@@ -70,7 +70,7 @@ void main() {
       ),
       id: id,
     );
-    return (await (db.select(db.accounts)..where((t) => t.id.equals(id))).getSingle())!;
+    return (await (db.select(db.accounts)..where((t) => t.id.equals(id))).getSingle());
   }
 
   Future<void> seedIncome(String id, String accountId, int amount) async {

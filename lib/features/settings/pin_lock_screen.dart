@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../data/providers.dart';
@@ -20,7 +21,7 @@ class PinLockGate extends ConsumerStatefulWidget {
 class _PinLockGateState extends ConsumerState<PinLockGate> {
   @override
   Widget build(BuildContext context) {
-    final pin = ref.watch(settingsProvider('app_pin')).valueOrNull ?? '';
+    final pin = ref.watch(settingsProvider('app_pin')).value ?? '';
     final unlocked = ref.watch(PinLockGate._unlocked);
     final hasPin = pin.isNotEmpty;
 

@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/widgets.dart' hide Path;
 
 import '../core/utils.dart';
 import 'database.dart';
@@ -212,6 +211,14 @@ class ReportService {
     );
   }
 
+  /// Listras alternadas com divisor fino; a linha 0 é o cabeçalho (tem `headerDecoration`).
+  static pw.BoxDecoration _zebraRow(int cellIndex, dynamic data, int rowNum) => rowNum == 0
+      ? const pw.BoxDecoration()
+      : pw.BoxDecoration(
+          color: rowNum.isEven ? PdfColors.white : PdfColors.grey100,
+          border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: .5)),
+        );
+
   static pw.Widget _categoryTable(ReportData r) {
     final rows = r.expensesByCategory.take(12).map((d) {
       final name = r.categories[d.categoryId]?.name ?? (d.categoryId == 'sem-categoria' ? 'Sem categoria' : 'Outros');
@@ -235,14 +242,7 @@ class ReportService {
         1: const pw.FlexColumnWidth(1),
         2: const pw.FlexColumnWidth(2),
       },
-      cellDecoration: (index) {
-        final isHeader = index.row == 0;
-        if (isHeader) return const pw.BoxDecoration();
-        return pw.BoxDecoration(
-          color: index.row.isEven ? PdfColors.white : PdfColors.grey100,
-          border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: .5)),
-        );
-      },
+      cellDecoration: _zebraRow,
     );
   }
 
@@ -267,13 +267,7 @@ class ReportService {
               headerStyle: const pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 10),
               cellStyle: pw.TextStyle(fontSize: 10, color: PdfColors.black),
               cellPadding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-              cellDecoration: (index) {
-                if (index.row == 0) return const pw.BoxDecoration();
-                return pw.BoxDecoration(
-                  color: index.row.isEven ? PdfColors.white : PdfColors.grey100,
-                  border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: .5)),
-                );
-              },
+              cellDecoration: _zebraRow,
             ),
     );
   }
@@ -304,13 +298,7 @@ class ReportService {
         2: const pw.FlexColumnWidth(1.4),
         3: const pw.FlexColumnWidth(1.6),
       },
-      cellDecoration: (index) {
-        if (index.row == 0) return const pw.BoxDecoration();
-        return pw.BoxDecoration(
-          color: index.row.isEven ? PdfColors.white : PdfColors.grey100,
-          border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: .5)),
-        );
-      },
+      cellDecoration: _zebraRow,
     );
   }
 

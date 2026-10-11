@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/utils.dart';
-import 'common.dart';
 
 /// Doughnut com centro e legenda vertical.
 class CategoryDonut extends StatelessWidget {
@@ -158,6 +157,29 @@ class CashFlowBars extends StatelessWidget {
     final maxValue = data.fold<int>(0, (m, d) => d.income > m ? d.income : (d.expense > m ? d.expense : m));
     final labels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 
+    if (isEmpty) {
+      return SizedBox(
+        height: 220,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.bar_chart_rounded, size: 34, color: scheme.outlineVariant),
+              const SizedBox(height: 8),
+              Text(
+                'Sem movimentação no período',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
       height: 220,
       child: BarChart(
@@ -168,8 +190,8 @@ class CashFlowBars extends StatelessWidget {
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 final d = data[group.x];
                 return BarTooltipItem(
-                  '${rodIndex == 0 ? 'Receitas' : 'Gastos'}: ${Formats.money(rod.toY.round())}',
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
+                  '${d.label}\n${rodIndex == 0 ? 'Receitas' : 'Gastos'}: ${Formats.money(rod.toY.round())}',
+                  const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
                 );
               },
             ),
@@ -234,7 +256,6 @@ class CashFlowBars extends StatelessWidget {
                 ],
               ),
           ],
-          extraLinesData: ExtraLinesData(extraLines: const []),
           minY: 0,
         ),
       ),
@@ -272,12 +293,9 @@ class TrendChart extends StatelessWidget {
         getTooltipItems: (spots) => [
           for (final s in spots)
             LineTooltipItem(
-              '${data[s.x.toInt()].label}\n${Formats.money(s.y.round())}',
-              TextStyle(
-                color: s.bar == 0 ? Colors.white : Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
+              '${data[s.x.toInt()].label}\n'
+              '${s.bar.color == AppColors.income ? 'Receitas' : 'Gastos'}: ${Formats.money(s.y.round())}',
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
             ),
         ],
       ),

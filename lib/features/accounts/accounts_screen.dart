@@ -525,7 +525,7 @@ class _AccountEditorSheetState extends ConsumerState<_AccountEditorSheet> {
         type: Value(_type),
         icon: Value(_typeIcon()),
         color: Value(_color),
-        initialBalance: Value(MoneyField.centsOf(_initial) ?? 0),
+        initialBalance: Value(MoneyField.centsOf(_initial)),
         includeInTotal: const Value(true),
         isDefault: Value(isDefault),
         archived: Value(isArchived),
