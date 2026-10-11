@@ -1,0 +1,7 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        enabled: true
+      riverpod_generator:
+        enabled: false
