@@ -78,10 +78,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               error: (e, _) => Center(child: Text('Erro: $e')),
               data: (list) {
                 if (list.isEmpty) {
-                  return const EmptyState(
+                  final filtered = _type != null || _search != null || _range != null;
+                  return EmptyState(
                     icon: Icons.receipt_long_rounded,
-                    title: 'Sem transações',
-                    subtitle: 'Toque em + para registrar um gasto ou receita.',
+                    title: filtered ? 'Nada encontrado' : 'Sem transações',
+                    subtitle: filtered
+                        ? 'Nenhum lançamento corresponde aos filtros atuais.'
+                        : 'Toque em + para registrar um gasto ou receita — '
+                            'ou carregue dados de exemplo para ver o app cheio.',
+                    action: filtered ? null : const LoadDemoButton(),
                   );
                 }
                 return ListView.separated(

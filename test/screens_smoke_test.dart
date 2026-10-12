@@ -1,6 +1,7 @@
 import 'package:drift/native.dart';
 import 'package:finamind/core/utils.dart';
 import 'package:finamind/data/database.dart';
+import 'package:finamind/data/demo_data.dart';
 import 'package:finamind/data/providers.dart';
 import 'package:finamind/features/budgets/budgets_screen.dart';
 import 'package:finamind/features/dashboard/dashboard_screen.dart';
@@ -207,6 +208,44 @@ void main() {
     await tester.tap(find.text('Semana'));
     await flushAsync(tester);
     expect(find.text('Relatórios'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('telas vazias oferecem carregar dados de exemplo', (tester) async {
+    await pumpScreen(tester, const TransactionsScreen());
+    expect(find.text('Carregar dados de exemplo'), findsOneWidget);
+
+    await tester.tap(find.text('Carregar dados de exemplo'));
+    await flushAsync(tester);
+    expect(find.text('Carregar dados de exemplo?'), findsOneWidget);
+
+    await tester.tap(find.text('Carregar exemplo'));
+    await flushAsync(tester);
+    expect(find.text('Sem transações'), findsNothing);
+    expect(find.textContaining('Notebook Dell'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    await pumpScreen(tester, const DashboardScreen());
+    expect(find.text('Modo demonstração: dados fictícios para explorar cada tela.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('modo demonstração preenche as telas com dados fictícios', (tester) async {
+    await binding.runAsync(() => DemoData.load(db));
+    await pumpScreen(tester, const DashboardScreen());
+
+    expect(find.text('Modo demonstração: dados fictícios para explorar cada tela.'), findsOneWidget);
+    expect(find.text('Conta corrente'), findsWidgets);
+    expect(find.text('Erro:'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await pumpScreen(tester, const TransactionsScreen());
+    expect(find.textContaining('Notebook Dell'), findsWidgets);
+    await pumpScreen(tester, const BudgetsScreen());
+    expect(tester.takeException(), isNull);
+    await pumpScreen(tester, const GoalsScreen());
+    await scrollUntilVisible(tester, find.text('Notebook novo'));
+    expect(find.text('Notebook novo'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils.dart';
 import '../../data/database.dart';
+import '../../data/demo_data.dart';
 import '../../data/providers.dart';
 import '../../ui/charts.dart';
 import '../../ui/common.dart';
@@ -59,6 +60,10 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
         children: [
+          if (ref.watch(settingsProvider(DemoData.settingKey)).value == 'true') ...[
+            const _DemoBanner(),
+            const SizedBox(height: 12),
+          ],
           _HeroCard(data: data),
           const SizedBox(height: 16),
           _AccountsStrip(accounts: data.accounts),
@@ -251,7 +256,9 @@ class _DashboardBodyState extends ConsumerState<_DashboardBody> {
               child: EmptyState(
                 icon: Icons.receipt_long_rounded,
                 title: 'Nada por aqui ainda',
-                subtitle: 'Adicione sua primeira despesa ou receita para começar.',
+                subtitle: 'Adicione sua primeira despesa ou receita para começar — '
+                    'ou carregue dados de exemplo para ver o app cheio.',
+                action: const LoadDemoButton(),
               ),
             )
           else
@@ -595,5 +602,55 @@ class _TxTile extends StatelessWidget {
       ),
       onTap: () => Navigator.of(context).pushNamed('/nova-transacao/${tx.id}'),
     );
+  }
+}
+
+/// Faixa mostrada acima do panorama enquanto o modo demonstração está ativo,
+/// com atalho para apagar os dados de exemplo.
+class _DemoBanner extends ConsumerWidget {
+  const _DemoBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: .10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: .30)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome_rounded, size: 18, color: AppColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Modo demonstração: dados fictícios para explorar cada tela.',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => _exit(context, ref),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exit(BuildContext context, WidgetRef ref) async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Sair do modo demonstração?',
+      message: 'Os dados de exemplo serão apagados e o app volta ao estado limpo.',
+      confirmLabel: 'Sair do demo',
+    );
+    if (!ok) return;
+    await DemoData.clear(ref.read(databaseProvider));
+    if (context.mounted) showAppSnack(context, 'Dados de exemplo removidos');
   }
 }

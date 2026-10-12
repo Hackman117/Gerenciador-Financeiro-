@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils.dart';
 import '../../data/database.dart';
+import '../../data/demo_data.dart';
 import '../../data/providers.dart';
 import '../../data/sync.dart';
 import '../../ui/common.dart';
@@ -20,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.read(databaseProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final demoOn = ref.watch(settingsProvider(DemoData.settingKey)).value == 'true';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
@@ -75,6 +77,29 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const SectionHeader(title: 'Demonstração'),
+          _SectionCard(
+            children: [
+              ListTile(
+                leading: Icon(demoOn ? Icons.auto_awesome_rounded : Icons.auto_awesome_outlined, color: AppColors.primary),
+                title: Text(demoOn ? 'Dados de exemplo ativos' : 'Carregar dados de exemplo'),
+                subtitle: Text(
+                  demoOn
+                      ? '6 meses de lançamentos, metas, orçamentos e cartão fictícios'
+                      : 'Um app completo com dados fictícios para explorar cada tela',
+                ),
+                trailing: demoOn ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : const Icon(Icons.chevron_right_rounded),
+                onTap: demoOn ? null : () => _loadDemo(context, ref),
+              ),
+              if (demoOn)
+                ListTile(
+                  leading: Icon(Icons.delete_sweep_rounded, color: Theme.of(context).colorScheme.error),
+                  title: const Text('Sair do modo demonstração'),
+                  subtitle: const Text('Apaga os dados de exemplo e volta ao estado limpo'),
+                  onTap: () => _clearDemo(context, ref),
+                ),
+            ],
+          ),
           const SectionHeader(title: 'Dados'),
           _SectionCard(
             children: [
@@ -121,6 +146,34 @@ class SettingsScreen extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) showAppSnack(context, 'Falha ao exportar: $e', error: true);
     }
+  }
+
+  Future<void> _loadDemo(BuildContext context, WidgetRef ref) async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Carregar dados de exemplo?',
+      message: 'Os dados deste dispositivo serão substituídos por movimentações fictícias '
+          '(6 meses de lançamentos, metas, orçamentos e cartão). Você pode apagar tudo depois.',
+      confirmLabel: 'Carregar exemplo',
+      destructive: false,
+    );
+    if (!ok) return;
+    final db = ref.read(databaseProvider);
+    await DemoData.load(db);
+    if (context.mounted) showAppSnack(context, 'Modo demonstração carregado — explore as abas!');
+  }
+
+  Future<void> _clearDemo(BuildContext context, WidgetRef ref) async {
+    final ok = await confirmDialog(
+      context,
+      title: 'Sair do modo demonstração?',
+      message: 'Os dados de exemplo serão apagados e o app volta ao estado limpo.',
+      confirmLabel: 'Sair do demo',
+    );
+    if (!ok) return;
+    final db = ref.read(databaseProvider);
+    await DemoData.clear(db);
+    if (context.mounted) showAppSnack(context, 'Dados de exemplo removidos');
   }
 
   Future<void> _clearData(BuildContext context, WidgetRef ref) async {

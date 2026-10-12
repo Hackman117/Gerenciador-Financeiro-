@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/utils.dart';
 import '../data/database.dart';
+import '../data/demo_data.dart';
+import '../data/providers.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -60,8 +63,9 @@ class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
+  final Widget? action;
 
-  const EmptyState({super.key, required this.icon, required this.title, this.subtitle});
+  const EmptyState({super.key, required this.icon, required this.title, this.subtitle, this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -91,9 +95,40 @@ class EmptyState extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
+            if (action != null) ...[
+              const SizedBox(height: 18),
+              action!,
+            ],
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Botão pronto para telas vazias: carrega o modo demonstração com
+/// confirmação e um resumo do que foi preenchido.
+class LoadDemoButton extends ConsumerWidget {
+  const LoadDemoButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FilledButton.tonalIcon(
+      onPressed: () async {
+        final ok = await confirmDialog(
+          context,
+          title: 'Carregar dados de exemplo?',
+          message: 'Os dados deste dispositivo serão substituídos por movimentações fictícias. '
+              'Você pode apagar tudo depois em Ajustes.',
+          confirmLabel: 'Carregar exemplo',
+          destructive: false,
+        );
+        if (!ok) return;
+        await DemoData.load(ref.read(databaseProvider));
+        if (context.mounted) showAppSnack(context, 'Modo demonstração carregado — explore as abas!');
+      },
+      icon: const Icon(Icons.auto_awesome_outlined, size: 18),
+      label: const Text('Carregar dados de exemplo'),
     );
   }
 }
