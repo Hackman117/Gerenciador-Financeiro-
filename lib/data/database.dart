@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:uuid/uuid.dart';
 
 import '../core/utils.dart';
@@ -207,8 +208,16 @@ class AppDatabase extends _$AppDatabase {
 
   AppDatabase.forTesting(super.executor);
 
-  static QueryExecutor _openConnection() =>
-      driftDatabase(name: 'finamind', native: const DriftNativeOptions());
+  static QueryExecutor _openConnection() => driftDatabase(
+        name: 'finamind',
+        native: const DriftNativeOptions(),
+        web: kIsWeb
+            ? DriftWebOptions(
+                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                driftWorker: Uri.parse('drift_worker.js'),
+              )
+            : null,
+      );
 
   @override
   int get schemaVersion => 3;
