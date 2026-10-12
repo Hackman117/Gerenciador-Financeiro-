@@ -85,7 +85,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: Text(demoOn ? 'Dados de exemplo ativos' : 'Carregar dados de exemplo'),
                 subtitle: Text(
                   demoOn
-                      ? '6 meses de lançamentos, metas, orçamentos e cartão fictícios'
+                      ? '2 anos de lançamentos, metas, orçamentos e cartões fictícios'
                       : 'Um app completo com dados fictícios para explorar cada tela',
                 ),
                 trailing: demoOn ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : const Icon(Icons.chevron_right_rounded),
@@ -153,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
       context,
       title: 'Carregar dados de exemplo?',
       message: 'Os dados deste dispositivo serão substituídos por movimentações fictícias '
-          '(6 meses de lançamentos, metas, orçamentos e cartão). Você pode apagar tudo depois.',
+          '(2 anos de lançamentos, metas, orçamentos, recorrentes e cartões). Você pode apagar tudo depois.',
       confirmLabel: 'Carregar exemplo',
       destructive: false,
     );

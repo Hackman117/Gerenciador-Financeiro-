@@ -4,6 +4,8 @@ import 'package:finamind/data/database.dart';
 import 'package:finamind/data/demo_data.dart';
 import 'package:finamind/data/providers.dart';
 import 'package:finamind/features/budgets/budgets_screen.dart';
+import 'package:finamind/features/categories/categories_screen.dart';
+import 'package:finamind/features/credit_cards/credit_cards_screen.dart';
 import 'package:finamind/features/dashboard/dashboard_screen.dart';
 import 'package:finamind/features/goals/goals_screen.dart';
 import 'package:finamind/features/recurring/recurring_screen.dart';
@@ -246,6 +248,27 @@ void main() {
     await pumpScreen(tester, const GoalsScreen());
     await scrollUntilVisible(tester, find.text('Notebook novo'));
     expect(find.text('Notebook novo'), findsOneWidget);
+
+    /// A meta com prazo estourado mostra o aviso em laranja.
+    await scrollUntilVisible(tester, find.textContaining('em atraso'));
+    expect(find.textContaining('em atraso'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    /// Recorrentes tem o alerta de vencidos no topo da lista.
+    await pumpScreen(tester, const RecurringScreen());
+    expect(find.textContaining('vencido(s)'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    /// Cartões mostra a seção dos desativados.
+    await pumpScreen(tester, const CreditCardsScreen());
+    await scrollUntilVisible(tester, find.text('Desativados'));
+    expect(find.text('Desativados'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    /// Categorias mostra a personalizada 'Pets'.
+    await pumpScreen(tester, const CategoriesScreen());
+    await scrollUntilVisible(tester, find.text('Pets'));
+    expect(find.text('Pets'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }

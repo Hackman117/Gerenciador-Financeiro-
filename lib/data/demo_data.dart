@@ -4,8 +4,9 @@ import '../core/utils.dart';
 import 'database.dart';
 
 /// Modo demonstração: preenche o app com uma vida financeira completa
-/// (6 meses de lançamentos, orçamentos, metas, recorrentes e cartão) para
-/// mostrar como cada tela funciona sem precisar cadastrar nada.
+/// (2 anos de lançamentos, orçamentos, metas, recorrentes e cartão) para
+/// mostrar como cada tela e cada gráfico funcionam sem precisar cadastrar
+/// nada.
 ///
 /// Carregar o demo substitui todo o conteúdo atual e por isso a UI sempre
 /// confirma antes; [clear] volta o app ao estado limpo (contas e categorias
@@ -24,6 +25,23 @@ abstract final class DemoData {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final categories = {for (final c in await db.getCategories()) c.name: c.id};
+
+    /// Categoria personalizada (mostra ícone/cor próprios na aba Categorias)...
+    final pets = newId();
+    await db.upsertCategory(
+      CategoriesCompanion.insert(
+        id: pets,
+        name: 'Pets',
+        type: kExpense,
+        icon: const Value('pets'),
+        color: const Value(0xFFF59E0B),
+        isDefault: const Value(false),
+      ),
+      id: pets,
+    );
+    categories['Pets'] = pets;
+    /// ...e uma desativada, para mostrar o estado "desligada" na lista.
+    await db.setCategoryActive(categories['Educação']!, active: false);
 
     final checking = newId();
     final wallet = newId();
@@ -98,7 +116,7 @@ abstract final class DemoData {
       );
     }
 
-    for (var back = 5; back >= 0; back--) {
+    for (var back = 23; back >= 0; back--) {
       final month = DateTime(now.year, now.month - back, 1);
       final drift = 1 + (back % 3) * 0.06;
       DateTime day(int value) {
@@ -123,6 +141,7 @@ abstract final class DemoData {
         date: day(6),
         category: 'Moradia',
         description: 'Aluguel',
+        notes: 'Contrato vence em dezembro',
       );
       await tx(
         accountId: checking,
@@ -131,6 +150,7 @@ abstract final class DemoData {
         date: day(3),
         category: 'Alimentação',
         description: 'Supermercado do mês',
+        notes: 'Compra grande, mês fechado',
       );
       await tx(
         accountId: wallet,
@@ -189,12 +209,22 @@ abstract final class DemoData {
         description: 'Farmácia',
       );
       await tx(
+        accountId: wallet,
+        type: kExpense,
+        amount: scaled(18990),
+        date: day(16),
+        category: 'Pets',
+        description: 'Petshop',
+        notes: 'Ração e banho do Thor',
+      );
+      await tx(
         accountId: checking,
         type: kIncome,
         amount: scaled(65000),
         date: day(24),
         category: 'Freelance',
         description: 'Projeto extra',
+        notes: 'Site novo do cliente',
       );
       await tx(
         accountId: checking,
@@ -204,17 +234,40 @@ abstract final class DemoData {
         toAccountId: savings,
         description: 'Transferência para a poupança',
       );
+      await tx(
+        accountId: checking,
+        type: kTransfer,
+        amount: 120000,
+        date: day(9),
+        toAccountId: wallet,
+        description: 'Saque para a carteira',
+      );
+    }
+
+    /// Gastos miúdos de cada dia, para o gráfico da semana ficar completo.
+    for (var back = 6; back >= 0; back--) {
+      await tx(
+        accountId: wallet,
+        type: kExpense,
+        amount: 850 + back * 170,
+        date: DateTime(today.year, today.month, today.day - back, 9),
+        category: 'Alimentação',
+        description: 'Padaria',
+      );
     }
 
     final monthKey = Formats.monthKey(now);
     await db.batch((b) {
       b.insertAll(db.budgets, [
+        /// Restaurantes estoura de propósito para mostrar o alerta vermelho.
         for (final (name, limit) in const [
           ('Alimentação', 120000),
           ('Transporte', 40000),
           ('Lazer', 25000),
           ('Contas fixas', 45000),
-          ('Restaurantes', 20000),
+          ('Restaurantes', 15000),
+          ('Pets', 30000),
+          ('Saúde', 12000),
         ])
           BudgetsCompanion.insert(
             id: newId(),
@@ -267,6 +320,29 @@ abstract final class DemoData {
       contributions: const [450000],
       color: 0xFF9333EA,
     );
+    /// Meta com prazo vencido, para mostrar o aviso de atraso.
+    await goal(
+      name: 'Curso de inglês',
+      target: 250000,
+      contributions: const [150000],
+      color: 0xFFF59E0B,
+      deadline: DateTime(now.year, now.month - 1, 10),
+    );
+
+    /// Espalha as contribuições mês a mês, como depósitos reais.
+    final goals = await db.watchGoals().first;
+    for (final g in goals) {
+      final rows = await (db.select(db.goalContributions)
+            ..where((t) => t.goalId.equals(g.id))
+            ..orderBy([(t) => OrderingTerm.asc(t.date)]))
+          .get();
+      for (var i = 0; i < rows.length; i++) {
+        final back = rows.length - 1 - i;
+        await (db.update(db.goalContributions)..where((t) => t.id.equals(rows[i].id))).write(
+          GoalContributionsCompanion(date: Value(DateTime(now.year, now.month - back, 5, 10))),
+        );
+      }
+    }
 
     Future<void> recurring({
       required String description,
@@ -304,7 +380,24 @@ abstract final class DemoData {
       description: 'Internet fibra',
       type: kExpense,
       amount: 9990,
-      dueInDays: 7,
+      /// Vencida de propósito: mostra o alerta "gerar vencidos" na lista.
+      dueInDays: -3,
+      category: 'Contas fixas',
+    );
+    await recurring(
+      description: 'Faxineira',
+      type: kExpense,
+      amount: 16000,
+      dueInDays: 3,
+      frequency: 'weekly',
+      category: 'Moradia',
+    );
+    await recurring(
+      description: 'IPTU (parcela anual)',
+      type: kExpense,
+      amount: 120000,
+      dueInDays: 45,
+      frequency: 'yearly',
       category: 'Contas fixas',
     );
     await recurring(
@@ -361,6 +454,29 @@ abstract final class DemoData {
       installmentCount: 1,
       purchaseDate: DateTime(now.year, now.month - 1, 13),
     );
+
+    /// Parcelas vencidas já pagas (a última quita a compra) e o restante em
+    /// aberto — assim a tela de compras mostra "Quitada" e "Em aberto".
+    for (final purchase in await db.getPurchases()) {
+      for (final parcel in await db.getParcels(purchase.id)) {
+        if (parcel.dueDate.isBefore(today)) {
+          await db.setParcelPaid(parcel.id, paid: true);
+        }
+      }
+    }
+
+    /// Cartão desativado, para mostrar a seção "Desativados" em Cartões.
+    final oldCard = newId();
+    await db.saveCreditCard(
+      id: oldCard,
+      name: 'Cartão Itaú (antigo)',
+      accountId: cardAccount,
+      creditLimit: 300000,
+      closingDay: 10,
+      dueDay: 5,
+      color: 0xFF64748B,
+    );
+    await db.setCreditCardActive(oldCard, active: false);
 
     await db.setMonthlyGoals(expense: 350000, income: 550000, savings: 150000);
     await db.setSetting(settingKey, 'true');
