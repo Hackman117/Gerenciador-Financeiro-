@@ -32,6 +32,7 @@ class AccountsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Contas')),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-accounts',
         onPressed: () => _showEditor(context, ref, account: null),
         child: const Icon(Icons.add_rounded),
       ),

@@ -11,7 +11,10 @@ import '../../ui/common.dart';
 class TransactionEditorScreen extends ConsumerStatefulWidget {
   final String? txId;
 
-  const TransactionEditorScreen({super.key, this.txId});
+  /// Tipo já selecionado ao criar: 'receita', 'despesa' (padrão) ou 'transferencia'.
+  final String? initialType;
+
+  const TransactionEditorScreen({super.key, this.txId, this.initialType});
 
   @override
   ConsumerState<TransactionEditorScreen> createState() => _TransactionEditorScreenState();
@@ -24,7 +27,7 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
   final _notesController = TextEditingController();
 
   late String _typeKey;
-  late String? _accountId;
+  String? _accountId;
   String? _toAccountId;
   String? _categoryId;
   DateTime _date = DateTime.now();
@@ -33,7 +36,11 @@ class _TransactionEditorScreenState extends ConsumerState<TransactionEditorScree
   @override
   void initState() {
     super.initState();
-    _typeKey = kExpense;
+    _typeKey = switch (widget.initialType) {
+      'receita' => kIncome,
+      'transferencia' => kTransfer,
+      _ => kExpense,
+    };
     _loadIfEditing();
   }
 

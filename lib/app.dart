@@ -29,7 +29,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/nova-transacao',
         parentNavigatorKey: rootNavigatorKey,
-        builder: (_, _) => const TransactionEditorScreen(),
+        builder: (_, state) => TransactionEditorScreen(
+          initialType: state.uri.queryParameters['tipo'],
+        ),
       ),
       GoRoute(
         path: '/nova-transacao/:id',

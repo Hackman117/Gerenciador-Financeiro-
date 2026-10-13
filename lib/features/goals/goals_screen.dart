@@ -18,6 +18,7 @@ class GoalsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Metas')),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-goals',
         onPressed: () => showAppSheet(context, _GoalEditorSheet(goal: null)),
         child: const Icon(Icons.add_rounded),
       ),

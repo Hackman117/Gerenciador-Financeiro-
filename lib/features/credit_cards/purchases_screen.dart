@@ -68,6 +68,7 @@ class PurchasesScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-purchases',
         key: const ValueKey('purchases_add'),
         onPressed: () => _newPurchase(context, ref),
         icon: const Icon(Icons.add_shopping_cart_rounded),

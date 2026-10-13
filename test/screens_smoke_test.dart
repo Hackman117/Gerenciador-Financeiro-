@@ -7,6 +7,7 @@ import 'package:finamind/features/budgets/budgets_screen.dart';
 import 'package:finamind/features/categories/categories_screen.dart';
 import 'package:finamind/features/credit_cards/credit_cards_screen.dart';
 import 'package:finamind/features/dashboard/dashboard_screen.dart';
+import 'package:finamind/features/editors/transaction_editor.dart';
 import 'package:finamind/features/goals/goals_screen.dart';
 import 'package:finamind/features/recurring/recurring_screen.dart';
 import 'package:finamind/features/reports/reports_screen.dart';
@@ -14,6 +15,7 @@ import 'package:finamind/features/transactions/transactions_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'helpers/seed.dart';
@@ -44,9 +46,14 @@ void main() {
     }
   }
 
+  /// O dashboard encadeia ~15 consultas assincronas; com uma unica janela de
+  /// async real o provider nao completa e a tela fica no spinner. Alternar
+  /// janelas reais com pumps deixa o drift avancar com folga.
   Future<void> flushAsync(WidgetTester tester) async {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
-    await settle(tester);
+    for (var i = 0; i < 8; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
   }
 
   Future<void> pumpScreen(WidgetTester tester, Widget screen) async {
@@ -60,7 +67,7 @@ void main() {
   }
 
   Future<void> scrollUntilVisible(WidgetTester tester, Finder finder) async {
-    for (var i = 0; i < 12 && !finder.evaluate().isNotEmpty; i++) {
+    for (var i = 0; i < 26 && !finder.evaluate().isNotEmpty; i++) {
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -220));
       await settle(tester, 4);
     }
@@ -114,10 +121,71 @@ void main() {
 
     expect(find.text('Panorama'), findsOneWidget);
     expect(find.text('Panorama do mês'), findsOneWidget);
+
+    /// Atalhos de criação no topo.
+    expect(find.text('Receita'), findsOneWidget);
+    expect(find.text('Gasto'), findsOneWidget);
+    expect(find.text('Transferir'), findsOneWidget);
+    expect(find.text('Nova meta'), findsOneWidget);
+
+    /// Resumo do mês com tiles de estatística e comparativo.
+    await scrollUntilVisible(tester, find.text('Resumo do mês'));
+    expect(find.text('Resumo do mês'), findsOneWidget);
+    expect(find.text('Média por dia'), findsOneWidget);
+    expect(find.text('Maior gasto'), findsOneWidget);
+    expect(find.text('Taxa de economia'), findsOneWidget);
+    expect(find.text('Projeção até o fim do mês'), findsOneWidget);
+    /// 'Arrecadação' aparece como titulo de secao e como rotulo de tile.
+    expect(find.text('Arrecadação'), findsWidgets);
+
+    /// Meta de juntar dinheiro lista os objetivos cadastrados.
+    await scrollUntilVisible(tester, find.text('Meta de juntar dinheiro'));
+    expect(find.text('Meta de juntar dinheiro'), findsOneWidget);
+    expect(find.textContaining('Objetivos:'), findsOneWidget);
+
+    /// Orçamentos do mês com barra de consumo do limite.
+    await scrollUntilVisible(tester, find.text('Orçamentos do mês'));
+    expect(find.text('Orçamentos do mês'), findsOneWidget);
+    expect(find.textContaining('dentro do limite'), findsOneWidget);
+
+    /// Top categorias e próximos vencimentos ficam acessíveis na rolagem.
+    await scrollUntilVisible(tester, find.text('Top categorias do mês'));
+    expect(find.text('Top categorias do mês'), findsOneWidget);
+    await scrollUntilVisible(tester, find.text('Próximos 30 dias'));
+    expect(find.text('Próximos 30 dias'), findsOneWidget);
+
     await scrollUntilVisible(tester, find.text('Últimas movimentações'));
     expect(find.text('Últimas movimentações'), findsOneWidget);
     expect(find.text('Compra do mes'), findsOneWidget);
     expect(find.text('Erro:'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('atalho Receita do Panorama abre o editor ja como receita', (tester) async {
+    await seedMonth();
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, _) => const DashboardScreen()),
+        GoRoute(
+          path: '/nova-transacao',
+          builder: (_, state) => TransactionEditorScreen(initialType: state.uri.queryParameters['tipo']),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await flushAsync(tester);
+
+    await tester.tap(find.text('Receita'));
+    await flushAsync(tester);
+    expect(find.text('Nova transação'), findsOneWidget);
+    expect(find.text('Categoria (receita)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

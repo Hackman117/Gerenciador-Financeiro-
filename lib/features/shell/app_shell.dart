@@ -50,6 +50,7 @@ class _AppShellState extends ConsumerState<AppShell> {
           ? Row(
               children: [
                 NavigationRail(
+                  scrollable: true,
                   selectedIndex: index,
                   onDestinationSelected: (i) =>
                       ref.read(shellTabProvider.notifier).state = i,
@@ -123,6 +124,7 @@ class _QuickFAB extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FloatingActionButton(
+      heroTag: 'fab-shell-transacao',
       onPressed: () => context.push('/nova-transacao'),
       tooltip: 'Nova transação',
       child: const Icon(Icons.add_rounded),

@@ -39,6 +39,7 @@ class CreditCardsScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-cards',
         key: const ValueKey('credit_cards_add'),
         onPressed: () => _showEditor(context, ref, card: null),
         child: const Icon(Icons.add_rounded),

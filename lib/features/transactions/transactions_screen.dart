@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils.dart';
@@ -57,10 +58,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               icon: const Icon(Icons.filter_alt_off_outlined),
             ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pushNamed('/nova-transacao'),
-        child: const Icon(Icons.add_rounded),
       ),
       body: Column(
         children: [
@@ -212,7 +209,7 @@ class _TransactionTile extends ConsumerWidget {
 
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      onTap: () => Navigator.of(context).pushNamed('/nova-transacao/${tx.id}'),
+      onTap: () => context.push('/nova-transacao/${tx.id}'),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: CategoryAvatar(icon: category?.icon ?? 'other', color: category?.color ?? 0xFF94A3B8),

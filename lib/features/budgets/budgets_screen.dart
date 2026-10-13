@@ -37,6 +37,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Orçamentos')),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-budgets',
         onPressed: () => _showEditor(null),
         child: const Icon(Icons.add_rounded),
       ),

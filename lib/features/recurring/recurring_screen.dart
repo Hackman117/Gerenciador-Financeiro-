@@ -101,6 +101,7 @@ class _RecurringScreenState extends ConsumerState<RecurringScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'fab-recurring',
         onPressed: () => _showEditor(ref, accounts, categories, null),
         child: const Icon(Icons.add_rounded),
       ),

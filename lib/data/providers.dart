@@ -111,13 +111,20 @@ class DashboardData {
   final int balance;
   final int income;
   final int expense;
+  final int prevIncome;
+  final int prevExpense;
   final int largestExpense;
   final double dailyAverage;
   final double savingsRate;
+  final ({int expense, int income, int savings}) monthGoals;
+  final ({int count, int limit, int spent, int over}) budgetSummary;
   final List<({String categoryId, int amount})> expenses;
   final List<({String categoryId, int amount})> incomes;
   final Map<String, Category> categories;
   final List<({String label, int income, int expense})> monthly;
+  final List<RecurringRule> upcoming;
+  final int projectedDelta;
+  final List<Goal> savingsGoals;
   final List<Tx> recent;
   final List<Account> accounts;
 
@@ -125,18 +132,33 @@ class DashboardData {
     required this.balance,
     required this.income,
     required this.expense,
+    required this.prevIncome,
+    required this.prevExpense,
     required this.largestExpense,
     required this.dailyAverage,
     required this.savingsRate,
+    required this.monthGoals,
+    required this.budgetSummary,
     required this.expenses,
     required this.incomes,
     required this.categories,
     required this.monthly,
+    required this.upcoming,
+    required this.projectedDelta,
+    required this.savingsGoals,
     required this.recent,
     required this.accounts,
   });
 
   int get savings => income - expense;
+
+  bool get hasActivity => income > 0 || expense > 0;
+
+  bool get hasMonthGoals =>
+      monthGoals.income > 0 ||
+      monthGoals.expense > 0 ||
+      monthGoals.savings > 0 ||
+      savingsGoals.isNotEmpty;
 }
 
 final dashboardProvider = FutureProvider<DashboardData>((ref) async {
@@ -165,19 +187,51 @@ final dashboardProvider = FutureProvider<DashboardData>((ref) async {
   final dailyAvg = daysElapsed == 0 ? 0.0 : expense / daysElapsed;
   final savingsRate = income == 0 ? 0.0 : ((income - expense) / income).clamp(0.0, 1.0);
 
+  final prevStart = DateTime(now.year, now.month - 1, 1);
+  final prevEnd = endOfDay(DateTime(now.year, now.month, 0));
+  final prevIncome = await db.sumByType(kIncome, from: prevStart, to: prevEnd);
+  final prevExpense = await db.sumByType(kExpense, from: prevStart, to: prevEnd);
+
+  final monthGoals = await db.monthlyGoals();
+
+  final budgets = await db.watchBudgets(Formats.monthKey(now)).first;
+  var budgetLimit = 0;
+  var budgetSpent = 0;
+  var budgetOver = 0;
+  if (budgets.isNotEmpty) {
+    final spent = await db.spentByCategory(from: monthStart, to: monthEnd);
+    for (final budget in budgets) {
+      budgetLimit += budget.limitAmount;
+      final used = spent[budget.categoryId] ?? 0;
+      budgetSpent += used;
+      if (used > budget.limitAmount) budgetOver++;
+    }
+  }
+
+  final upcoming = await db.upcomingRecurring();
+  final projectedDelta = await db.projectedDeltaUntil(until: monthEnd);
+  final savingsGoals = await db.watchGoals().first;
+
   return DashboardData(
     balance: balance,
     income: income,
     expense: expense,
+    prevIncome: prevIncome,
+    prevExpense: prevExpense,
     largestExpense: largest,
     dailyAverage: dailyAvg,
     savingsRate: savingsRate,
+    monthGoals: monthGoals,
+    budgetSummary: (count: budgets.length, limit: budgetLimit, spent: budgetSpent, over: budgetOver),
     expenses: expensesPie,
     incomes: incomesPie,
     categories: categories,
     monthly: [
       for (final m in monthly) (label: m.month, income: m.income, expense: m.expense),
     ],
+    upcoming: upcoming,
+    projectedDelta: projectedDelta,
+    savingsGoals: savingsGoals,
     recent: recent,
     accounts: accounts,
   );
